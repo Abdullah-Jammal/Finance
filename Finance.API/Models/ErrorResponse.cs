@@ -1,0 +1,9 @@
+﻿namespace Finance.API.Models;
+
+public sealed class ErrorResponse
+{
+    public int StatusCode { get; init; }
+    public string Message { get; init; } = default!;
+    public string? ErrorCode { get; init; }
+    public object? Errors { get; init; }
+}
