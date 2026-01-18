@@ -1,5 +1,4 @@
-﻿
-using Finance.Domain.Abstractions;
+﻿using Finance.Domain.Abstractions;
 
 namespace Finance.Domain.Entities.Company;
 

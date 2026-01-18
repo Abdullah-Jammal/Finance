@@ -1,4 +1,4 @@
-﻿using Finance.API.Models;
+﻿using Finance.API.Models.Queries.Common;
 using Finance.Application.Common.Exceptions;
 using FluentValidation;
 using System.Text.Json;

@@ -1,4 +1,5 @@
-﻿using Finance.Application.Common.Sorting;
+﻿using Finance.API.Models.Queries.Common;
+using Finance.API.Models.Queries.Companies;
 using Finance.Application.Features.Companies.Commands.CreateCompany;
 using Finance.Application.Features.Companies.Commands.RestoreCompany;
 using Finance.Application.Features.Companies.Commands.SoftDeleteCompany;
@@ -16,36 +17,32 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
     public async Task<IActionResult> Create(
-    [FromBody] CreateCompanyCommand command,
+    [FromBody] CreateCompanyRequestDto createCompanyDto,
     CancellationToken cancellationToken)
     {
-        var companyId = await mediator.Send(command, cancellationToken);
+        var companyId = await mediator.Send(createCompanyDto, cancellationToken);
 
         return CreatedAtAction(
             nameof(Create),
             new { id = companyId },
             companyId);
     }
+
     [HttpGet]
     public async Task<IActionResult> GetPaged(
-            [FromQuery] int pageNumber = 1,
-            [FromQuery] int pageSize = 10,
-            [FromQuery] bool? isActive = null,
-            [FromQuery] string? code = null,
-            [FromQuery] string? search = null,
-            [FromQuery] CompanySortField sortBy = CompanySortField.Name,
-            [FromQuery] SortDirection sortDirection = SortDirection.Asc,
-            CancellationToken cancellationToken = default)
+        [FromQuery] PagingParameters paging,
+        [FromQuery] CompanyQueryParameters query,
+        CancellationToken cancellationToken = default)
     {
         var result = await mediator.Send(
             new GetAllCompaniesQuery(
-                pageNumber,
-                pageSize,
-                isActive,
-                code,
-                search,
-                sortBy,
-                sortDirection),
+                paging.PageNumber,
+                paging.PageSize,
+                query.IsActive,
+                query.Code,
+                query.Search,
+                query.SortBy,
+                query.SortDirection),
             cancellationToken);
 
         return Ok(result);

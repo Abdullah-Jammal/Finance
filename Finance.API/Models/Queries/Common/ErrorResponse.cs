@@ -1,4 +1,4 @@
-﻿namespace Finance.API.Models;
+﻿namespace Finance.API.Models.Queries.Common;
 
 public sealed class ErrorResponse
 {
