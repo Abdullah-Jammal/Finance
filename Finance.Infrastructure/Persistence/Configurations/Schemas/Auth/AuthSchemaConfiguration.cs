@@ -7,7 +7,6 @@ namespace Finance.Infrastructure.Persistence.Configurations.Schemas.Auth;
 public static class AuthSchemaConfiguration
 {
     private const string Schema = "auth";
-
     public static void Configure(ModelBuilder builder)
     {
         builder.Entity<ApplicationUser>().ToTable("users", Schema);

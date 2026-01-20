@@ -1,6 +1,8 @@
+using Finance.API.Middleware;
 using Finance.Application;
 using Finance.Infrastructure;
-using Finance.API.Middleware;
+using Finance.Infrastructure.Persistence.Seed;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +23,16 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<FinanceDbContext>();
+    var roleManager =
+        scope.ServiceProvider.GetRequiredService<
+            RoleManager<IdentityRole<Guid>>>();
+
+    await AuthSeed.SeedAsync(db, roleManager);
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
