@@ -7,7 +7,9 @@ using Finance.Application.Features.Companies.Commands.UpdateCompany;
 using Finance.Application.Features.Companies.Queries.GetAllCompanies;
 using Finance.Application.Features.Companies.Queries.GetCompanyById;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Finance.Application.Common.Authorization;
 
 namespace Finance.API.Controllers.Company;
 
@@ -16,6 +18,7 @@ namespace Finance.API.Controllers.Company;
 public sealed class CompaniesController(IMediator mediator) : ControllerBase
 {
     [HttpPost]
+    [Authorize(Policy = Permissions.Companies_Create)]
     public async Task<IActionResult> Create(
     [FromBody] CreateCompanyRequestDto createCompanyDto,
     CancellationToken cancellationToken)
@@ -29,6 +32,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet]
+    [Authorize(Policy = Permissions.Companies_View)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] PagingParameters paging,
         [FromQuery] CompanyQueryParameters query,
@@ -49,6 +53,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
     }
 
     [HttpGet("{id:guid}")]
+    [Authorize(Policy = Permissions.Companies_View)]
     public async Task<IActionResult> GetById(
     Guid id,
     CancellationToken cancellationToken)
@@ -61,6 +66,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
     }
 
     [HttpPut("{id:guid}")]
+    [Authorize(Policy = Permissions.Companies_Update)]
     public async Task<IActionResult> Update(
     Guid id,
     [FromBody] UpdateCompanyRequestDto request,
@@ -77,6 +83,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
     }
 
     [HttpDelete("{id:guid}")]
+    [Authorize(Policy = Permissions.Companies_Delete)]
     public async Task<IActionResult> SoftDelete(
     Guid id,
     CancellationToken ct)
@@ -89,6 +96,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
     }
 
     [HttpPost("{id:guid}/restore")]
+    [Authorize(Policy = Permissions.Companies_Update)]
     public async Task<IActionResult> Restore(
     Guid id,
     CancellationToken ct)
