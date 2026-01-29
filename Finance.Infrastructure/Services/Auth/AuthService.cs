@@ -4,6 +4,7 @@ using Finance.Domain.Entities.Auth;
 using Finance.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Cryptography;
 
 namespace Finance.Infrastructure.Services.Auth;
 
@@ -49,10 +50,83 @@ public sealed class AuthService(
             companyId,
             ct);
 
+        var refreshTokenValue = GenerateRefreshToken();
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        var refreshToken = new RefreshToken(
+            user.Id,
+            companyId,
+            refreshTokenValue,
+            refreshTokenExpiresAt);
+
+        db.Set<RefreshToken>().Add(refreshToken);
+        await db.SaveChangesAsync(ct);
+
         return new LoginResult
         {
             AccessToken = token,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60)
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            RefreshToken = refreshTokenValue,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt
         };
+    }
+
+    public async Task<LoginResult> RefreshTokenAsync(
+        string refreshToken,
+        CancellationToken ct)
+    {
+        var storedToken = await db.Set<RefreshToken>()
+            .FirstOrDefaultAsync(
+                x => x.Token == refreshToken,
+                ct);
+
+        if (storedToken is null || !storedToken.IsActive)
+            throw new UnauthorizedAccessException("Invalid refresh token");
+
+        storedToken.Revoke();
+
+        var newRefreshTokenValue = GenerateRefreshToken();
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        var newRefreshToken = new RefreshToken(
+            storedToken.UserId,
+            storedToken.CompanyId,
+            newRefreshTokenValue,
+            refreshTokenExpiresAt);
+
+        db.Set<RefreshToken>().Add(newRefreshToken);
+
+        var accessToken = await tokenService.GenerateTokenAsync(
+            storedToken.UserId,
+            await GetUserEmailAsync(storedToken.UserId, ct),
+            storedToken.CompanyId,
+            ct);
+
+        await db.SaveChangesAsync(ct);
+
+        return new LoginResult
+        {
+            AccessToken = accessToken,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            RefreshToken = newRefreshTokenValue,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt
+        };
+    }
+
+    private static string GenerateRefreshToken()
+    {
+        var bytes = RandomNumberGenerator.GetBytes(64);
+        return Convert.ToBase64String(bytes);
+    }
+
+    private async Task<string> GetUserEmailAsync(Guid userId, CancellationToken ct)
+    {
+        var user = await userManager.Users
+            .Where(x => x.Id == userId)
+            .Select(x => x.Email)
+            .FirstOrDefaultAsync(ct);
+
+        if (string.IsNullOrWhiteSpace(user))
+            throw new UnauthorizedAccessException("Invalid refresh token");
+
+        return user;
     }
 }

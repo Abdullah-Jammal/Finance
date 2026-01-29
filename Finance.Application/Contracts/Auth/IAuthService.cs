@@ -9,4 +9,8 @@ public interface IAuthService
         string password,
         Guid companyId,
         CancellationToken ct);
+
+    Task<LoginResult> RefreshTokenAsync(
+        string refreshToken,
+        CancellationToken ct);
 }
