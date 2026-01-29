@@ -18,7 +18,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorizationPolicies();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
 
 var app = builder.Build();

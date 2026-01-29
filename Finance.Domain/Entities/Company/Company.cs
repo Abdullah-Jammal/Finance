@@ -14,23 +14,6 @@ public class Company : AuditableEntity<Guid>
 
     public Company(string name, string code, string baseCurrencyCode)
     {
-        if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Company name is required");
-
-        if (string.IsNullOrWhiteSpace(code))
-            throw new ArgumentException("Company code is required");
-
-        if (string.IsNullOrWhiteSpace(baseCurrencyCode))
-            throw new ArgumentException("Base currency is required");
-
-        baseCurrencyCode = baseCurrencyCode.Trim().ToUpperInvariant();
-
-        if (baseCurrencyCode.Length != 3)
-            throw new ArgumentException("Base currency code must be exactly 3 characters");
-
-        Name = name.Trim();
-        Code = code.Trim().ToUpperInvariant();
-        BaseCurrencyCode = baseCurrencyCode;
         UpdateDetails(name, code, baseCurrencyCode);
     }
 
@@ -52,9 +35,13 @@ public class Company : AuditableEntity<Guid>
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Company name is required");
 
+        if (string.IsNullOrWhiteSpace(code))
+            throw new ArgumentException("Company code is required");
+
         if (string.IsNullOrWhiteSpace(baseCurrencyCode))
             throw new ArgumentException("Base currency is required");
 
+        code = code.Trim().ToUpperInvariant();
         baseCurrencyCode = baseCurrencyCode.Trim().ToUpperInvariant();
 
         if (baseCurrencyCode.Length != 3)
