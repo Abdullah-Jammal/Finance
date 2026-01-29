@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
-namespace Finance.Infrastructure.Services.AuthService;
+namespace Finance.Infrastructure.Services.Auth;
 
 public sealed class TokenService(
     FinanceDbContext db,

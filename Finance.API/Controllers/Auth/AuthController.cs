@@ -4,7 +4,7 @@ using Finance.Application.Features.Auth.SelectCompany;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Finance.API.Controllers;
+namespace Finance.API.Controllers.Auth;
 
 [ApiController]
 [Route("auth")]
