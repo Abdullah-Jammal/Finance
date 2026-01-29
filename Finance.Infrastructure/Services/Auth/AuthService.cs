@@ -1,6 +1,7 @@
 using Finance.Application.Contracts.Auth;
 using Finance.Application.Features.Auth.Login;
 using Finance.Domain.Entities.Auth;
+using Finance.Domain.Entities.Company;
 using Finance.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,10 +15,9 @@ public sealed class AuthService(
     ITokenService tokenService)
     : IAuthService
 {
-    public async Task<LoginResult> LoginAsync(
+    public async Task<LoginCompaniesResult> LoginAsync(
         string email,
         string password,
-        Guid companyId,
         CancellationToken ct)
     {
         // 1️⃣ Find user
@@ -32,10 +32,44 @@ public sealed class AuthService(
         if (!validPassword)
             throw new UnauthorizedAccessException("Invalid credentials");
 
-        // 3️⃣ Check company membership
+        var companies = await (
+            from uc in db.Set<UserCompany>()
+            join company in db.Set<Company>()
+                on uc.CompanyId equals company.Id
+            where uc.UserId == user.Id
+               && company.IsActive
+            select new LoginCompanyDto
+            {
+                Id = company.Id,
+                Name = company.Name
+            }).ToListAsync(ct);
+
+        var fullName = string.IsNullOrWhiteSpace(user.FullName)
+            ? user.Email ?? string.Empty
+            : user.FullName;
+
+        return new LoginCompaniesResult
+        {
+            UserId = user.Id,
+            FullName = fullName,
+            Companies = companies
+        };
+    }
+
+    public async Task<LoginResult> SelectCompanyAsync(
+        Guid userId,
+        Guid companyId,
+        CancellationToken ct)
+    {
+        var user = await userManager.Users
+            .FirstOrDefaultAsync(x => x.Id == userId, ct);
+
+        if (user is null || !user.IsActive)
+            throw new UnauthorizedAccessException("Invalid credentials");
+
         var belongsToCompany = await db.Set<UserCompany>()
             .AnyAsync(x =>
-                x.UserId == user.Id &&
+                x.UserId == userId &&
                 x.CompanyId == companyId,
                 ct);
 
@@ -43,31 +77,17 @@ public sealed class AuthService(
             throw new UnauthorizedAccessException(
                 "User is not assigned to this company");
 
-        // 4️⃣ Generate JWT
-        var token = await tokenService.GenerateTokenAsync(
-            user.Id,
-            user.Email!,
-            companyId,
-            ct);
+        var hasRoles = await db.Set<UserCompanyRole>()
+            .AnyAsync(x =>
+                x.UserId == userId &&
+                x.CompanyId == companyId,
+                ct);
 
-        var refreshTokenValue = GenerateRefreshToken();
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
-        var refreshToken = new RefreshToken(
-            user.Id,
-            companyId,
-            refreshTokenValue,
-            refreshTokenExpiresAt);
+        if (!hasRoles)
+            throw new UnauthorizedAccessException(
+                "User has no roles assigned for this company");
 
-        db.Set<RefreshToken>().Add(refreshToken);
-        await db.SaveChangesAsync(ct);
-
-        return new LoginResult
-        {
-            AccessToken = token,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
-            RefreshToken = refreshTokenValue,
-            RefreshTokenExpiresAt = refreshTokenExpiresAt
-        };
+        return await IssueTokensAsync(user.Id, user.Email!, companyId, ct);
     }
 
     public async Task<LoginResult> RefreshTokenAsync(
@@ -107,6 +127,38 @@ public sealed class AuthService(
             AccessToken = accessToken,
             ExpiresAt = DateTime.UtcNow.AddMinutes(60),
             RefreshToken = newRefreshTokenValue,
+            RefreshTokenExpiresAt = refreshTokenExpiresAt
+        };
+    }
+
+    private async Task<LoginResult> IssueTokensAsync(
+        Guid userId,
+        string email,
+        Guid companyId,
+        CancellationToken ct)
+    {
+        var token = await tokenService.GenerateTokenAsync(
+            userId,
+            email,
+            companyId,
+            ct);
+
+        var refreshTokenValue = GenerateRefreshToken();
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        var refreshToken = new RefreshToken(
+            userId,
+            companyId,
+            refreshTokenValue,
+            refreshTokenExpiresAt);
+
+        db.Set<RefreshToken>().Add(refreshToken);
+        await db.SaveChangesAsync(ct);
+
+        return new LoginResult
+        {
+            AccessToken = token,
+            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+            RefreshToken = refreshTokenValue,
             RefreshTokenExpiresAt = refreshTokenExpiresAt
         };
     }
