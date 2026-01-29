@@ -16,7 +16,7 @@ public sealed class UpdateCompanyCommandValidator
 
         RuleFor(x => x.Code)
             .NotEmpty()
-            .MaximumLength(200);
+            .MaximumLength(50);
 
         RuleFor(x => x.BaseCurrencyCode)
             .Length(3);
