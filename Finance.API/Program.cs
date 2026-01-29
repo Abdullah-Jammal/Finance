@@ -23,6 +23,7 @@ builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
+builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationResultHandler>();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -53,8 +54,11 @@ using (var scope = app.Services.CreateScope())
     var roleManager =
         scope.ServiceProvider.GetRequiredService<
             RoleManager<IdentityRole<Guid>>>();
+    var userManager =
+        scope.ServiceProvider.GetRequiredService<
+            UserManager<Finance.Infrastructure.Identity.ApplicationUser>>();
 
-    await AuthSeed.SeedAsync(db, roleManager);
+    await AuthSeed.SeedAsync(db, roleManager, userManager);
 }
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
