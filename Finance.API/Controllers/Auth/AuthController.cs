@@ -24,15 +24,22 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
         [FromBody] SelectCompanyRequest request,
         CancellationToken ct)
     {
-        if (!Guid.TryParse(
+        var userId = request.UserId;
+        if (!userId.HasValue
+            && Guid.TryParse(
                 Request.Headers["X-User-Id"].FirstOrDefault(),
-                out var userId))
+                out var headerUserId))
+        {
+            userId = headerUserId;
+        }
+
+        if (!userId.HasValue)
         {
             return Unauthorized();
         }
 
         var result = await mediator.Send(
-            new SelectCompanyCommand(userId, request.CompanyId),
+            new SelectCompanyCommand(userId.Value, request.CompanyId),
             ct);
 
         return Ok(result);
