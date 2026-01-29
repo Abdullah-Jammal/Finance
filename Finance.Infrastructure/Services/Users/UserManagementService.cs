@@ -70,12 +70,26 @@ public sealed class UserManagementService(
         string email,
         string password,
         string fullName,
+        Guid companyId,
+        Guid roleId,
         CancellationToken ct)
     {
         var exists = await userManager.FindByEmailAsync(email);
         if (exists is not null)
             throw new InvalidOperationException(
                 "User with this email already exists");
+
+        var companyExists = await db.Set<Company>()
+            .AnyAsync(x => x.Id == companyId && x.IsActive, ct);
+
+        if (!companyExists)
+            throw NotFoundException.ForEntity("Company", companyId);
+
+        var roleExists = await db.Set<IdentityRole<Guid>>()
+            .AnyAsync(x => x.Id == roleId, ct);
+
+        if (!roleExists)
+            throw NotFoundException.ForEntity("Role", roleId);
 
         var user = new ApplicationUser
         {
@@ -85,12 +99,20 @@ public sealed class UserManagementService(
             IsActive = true
         };
 
+        await using var transaction =
+            await db.Database.BeginTransactionAsync(ct);
+
         var result = await userManager.CreateAsync(user, password);
 
         if (!result.Succeeded)
             throw new InvalidOperationException(
                 string.Join(", ",
                     result.Errors.Select(e => e.Description)));
+
+        db.Add(new UserCompany(user.Id, companyId));
+        db.Add(new UserCompanyRole(user.Id, companyId, roleId));
+        await db.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return user.Id;
     }

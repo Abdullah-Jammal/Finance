@@ -5,5 +5,7 @@ namespace Finance.Application.Features.User.Commands.CreateUser;
 public sealed record CreateUserCommand(
     string Email,
     string Password,
-    string FullName
+    string FullName,
+    Guid CompanyId,
+    Guid RoleId
 ) : IRequest<Guid>;

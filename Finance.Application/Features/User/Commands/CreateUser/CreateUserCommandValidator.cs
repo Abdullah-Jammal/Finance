@@ -18,5 +18,11 @@ public sealed class CreateUserCommandValidator
         RuleFor(x => x.FullName)
             .NotEmpty()
             .MaximumLength(200);
+
+        RuleFor(x => x.CompanyId)
+            .NotEmpty();
+
+        RuleFor(x => x.RoleId)
+            .NotEmpty();
     }
 }

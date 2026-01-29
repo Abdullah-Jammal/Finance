@@ -15,6 +15,8 @@ public sealed class CreateUserCommandHandler(
             request.Email,
             request.Password,
             request.FullName,
+            request.CompanyId,
+            request.RoleId,
             ct);
     }
 }

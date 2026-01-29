@@ -37,7 +37,9 @@ public sealed class UsersController(IMediator mediator)
             new CreateUserCommand(
                 request.Email,
                 request.Password,
-                request.FullName),
+                request.FullName,
+                request.CompanyId,
+                request.RoleId),
             ct);
 
         return CreatedAtAction(
@@ -79,4 +81,6 @@ public sealed class CreateUserRequest
     public string Email { get; init; } = default!;
     public string Password { get; init; } = default!;
     public string FullName { get; init; } = default!;
+    public Guid CompanyId { get; init; }
+    public Guid RoleId { get; init; }
 }
