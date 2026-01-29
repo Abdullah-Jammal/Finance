@@ -14,10 +14,10 @@ public sealed class TokenService(
     IConfiguration configuration) : ITokenService
 {
     public async Task<string> GenerateTokenAsync(
-    Guid userId,
-    string email,
-    Guid companyId,
-    CancellationToken ct)
+        Guid userId,
+        string email,
+        Guid companyId,
+        CancellationToken ct)
     {
         var permissions = await (
             from ucr in db.Set<UserCompanyRole>()
@@ -28,31 +28,57 @@ public sealed class TokenService(
             where ucr.UserId == userId
                && ucr.CompanyId == companyId
             select p.Code
-        ).Distinct().ToListAsync(ct);
+        )
+        .Distinct()
+        .ToListAsync(ct);
 
         var claims = new List<Claim>
         {
             new(JwtRegisteredClaimNames.Sub, userId.ToString()),
             new(JwtRegisteredClaimNames.Email, email),
-            new("company_id", companyId.ToString())
+            new("company_id", companyId.ToString()),
+            new("token_type", "access")
         };
 
         claims.AddRange(
             permissions.Select(p =>
                 new Claim("permission", p)));
 
+        return CreateJwt(
+            claims,
+            expiresMinutes: 60);
+    }
+
+    public string CreateTempToken(Guid userId)
+    {
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, userId.ToString()),
+            new Claim("token_type", "temp")
+        };
+
+        return CreateJwt(
+            claims,
+            expiresMinutes: 5);
+    }
+
+    private string CreateJwt(
+    IEnumerable<Claim> claims,
+    int expiresMinutes)
+    {
         var key = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(
                 configuration["Jwt:Key"]!));
 
         var creds = new SigningCredentials(
-            key, SecurityAlgorithms.HmacSha256);
+            key,
+            SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
             issuer: configuration["Jwt:Issuer"],
             audience: configuration["Jwt:Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(60),
+            expires: DateTime.UtcNow.AddMinutes(expiresMinutes),
             signingCredentials: creds
         );
 

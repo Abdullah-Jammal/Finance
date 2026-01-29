@@ -7,4 +7,5 @@ public interface ITokenService
         string email,
         Guid companyId,
         CancellationToken ct);
+    string CreateTempToken(Guid userId);
 }

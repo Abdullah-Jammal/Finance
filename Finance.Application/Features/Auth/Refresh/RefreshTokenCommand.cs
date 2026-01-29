@@ -1,4 +1,4 @@
-using Finance.Application.Features.Auth.Login;
+using Finance.Application.Features.Auth.SelectCompany;
 using MediatR;
 
 namespace Finance.Application.Features.Auth.Refresh;

@@ -1,4 +1,4 @@
-namespace Finance.Application.Features.Auth.Login;
+namespace Finance.Application.Features.Auth.SelectCompany;
 
 public sealed record LoginResult
 {

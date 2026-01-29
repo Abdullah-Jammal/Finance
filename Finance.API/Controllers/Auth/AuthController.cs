@@ -2,7 +2,10 @@ using Finance.Application.Features.Auth.Login;
 using Finance.Application.Features.Auth.Refresh;
 using Finance.Application.Features.Auth.SelectCompany;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Finance.API.Controllers.Auth;
 
@@ -19,17 +22,17 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
+
+    [Authorize(AuthenticationSchemes = "Temp")]
     [HttpPost("select-company")]
     public async Task<IActionResult> SelectCompany(
         [FromBody] SelectCompanyRequest request,
         CancellationToken ct)
     {
-        if (!Guid.TryParse(
-                Request.Headers["X-User-Id"].FirstOrDefault(),
-                out var userId))
-        {
+        var sub = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (!Guid.TryParse(sub, out var userId))
             return Unauthorized();
-        }
 
         var result = await mediator.Send(
             new SelectCompanyCommand(userId, request.CompanyId),
@@ -37,6 +40,9 @@ public sealed class AuthController(IMediator mediator) : ControllerBase
 
         return Ok(result);
     }
+
+
+
 
     [HttpPost("refresh")]
     public async Task<IActionResult> Refresh(

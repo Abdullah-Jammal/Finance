@@ -1,5 +1,6 @@
 using Finance.Application.Contracts.Auth;
 using Finance.Application.Features.Auth.Login;
+using Finance.Application.Features.Auth.SelectCompany;
 using Finance.Domain.Entities.Auth;
 using Finance.Domain.Entities.Company;
 using Finance.Infrastructure.Identity;
@@ -32,6 +33,7 @@ public sealed class AuthService(
         if (!validPassword)
             throw new UnauthorizedAccessException("Invalid credentials");
 
+        // 3️⃣ Get companies
         var companies = await (
             from uc in db.Set<UserCompany>()
             join company in db.Set<Company>()
@@ -44,17 +46,26 @@ public sealed class AuthService(
                 Name = company.Name
             }).ToListAsync(ct);
 
+        if (companies.Count == 0)
+            throw new UnauthorizedAccessException(
+                "User is not assigned to any company");
+
         var fullName = string.IsNullOrWhiteSpace(user.FullName)
             ? user.Email ?? string.Empty
             : user.FullName;
+
+        // 4️⃣ Issue TEMP token
+        var tempToken = tokenService.CreateTempToken(user.Id);
 
         return new LoginCompaniesResult
         {
             UserId = user.Id,
             FullName = fullName,
+            TempToken = tempToken,
             Companies = companies
         };
     }
+
 
     public async Task<LoginResult> SelectCompanyAsync(
         Guid userId,

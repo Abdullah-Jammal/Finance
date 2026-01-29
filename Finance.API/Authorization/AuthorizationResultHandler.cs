@@ -1,6 +1,7 @@
 ﻿using System.Text.Json;
 using Finance.API.Models.Queries.Common;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Policy;
 
 namespace Finance.API.Authorization;
 

@@ -11,21 +11,64 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers().AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(
-        new System.Text.Json.Serialization.JsonStringEnumConverter());
-});
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(
+            new System.Text.Json.Serialization.JsonStringEnumConverter());
+    });
 
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
+
 builder.Services.AddAuthorizationPolicies();
 builder.Services.AddSingleton<IAuthorizationHandler, PermissionHandler>();
-builder.Services.AddSingleton<IAuthorizationMiddlewareResultHandler, AuthorizationResultHandler>();
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddSingleton<
+    IAuthorizationMiddlewareResultHandler,
+    AuthorizationResultHandler>();
+
+var jwtKey = builder.Configuration["Jwt:Key"]!;
+var key = new SymmetricSecurityKey(
+    Encoding.UTF8.GetBytes(jwtKey));
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = "Access";
+        options.DefaultChallengeScheme = "Access";
+    })
+
+    .AddJwtBearer("Access", options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -35,8 +78,80 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!))
+            IssuerSigningKey = key,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = ctx =>
+            {
+                var type = ctx.Principal?
+                    .FindFirst("token_type")?.Value;
+
+                if (type != "access")
+                    ctx.Fail("Invalid access token");
+
+                return Task.CompletedTask;
+            }
+        };
+    })
+
+    .AddJwtBearer("Temp", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = key,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = ctx =>
+            {
+                var type = ctx.Principal?
+                    .FindFirst("token_type")?.Value;
+
+                if (type != "temp")
+                    ctx.Fail("Invalid temp token");
+
+                return Task.CompletedTask;
+            }
+        };
+    })
+
+    .AddJwtBearer("Refresh", options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = key,
+            ClockSkew = TimeSpan.Zero
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = ctx =>
+            {
+                var type = ctx.Principal?
+                    .FindFirst("token_type")?.Value;
+
+                if (type != "refresh")
+                    ctx.Fail("Invalid refresh token");
+
+                return Task.CompletedTask;
+            }
         };
     });
 
