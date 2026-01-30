@@ -19,10 +19,12 @@ public sealed class CreateUserCommandValidator
             .NotEmpty()
             .MaximumLength(200);
 
-        RuleFor(x => x.CompanyId)
-            .NotEmpty();
+        RuleFor(x => x.Companies)
+            .NotNull()
+            .NotEmpty()
+            .WithMessage("User must belong to at least one company");
 
-        RuleFor(x => x.RoleId)
-            .NotEmpty();
+        RuleForEach(x => x.Companies)
+            .SetValidator(new CreateUserCompanyValidator());
     }
 }

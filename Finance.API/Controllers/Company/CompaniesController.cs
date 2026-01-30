@@ -17,7 +17,7 @@ namespace Finance.API.Controllers.Company;
 [ApiController]
 public sealed class CompaniesController(IMediator mediator) : ControllerBase
 {
-    [HttpPost]
+    [HttpPost("create-company")]
     [Authorize(Policy = Permissions.Companies_Create)]
     public async Task<IActionResult> Create(
     [FromBody] CreateCompanyRequestDto createCompanyDto,
@@ -31,7 +31,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
             companyId);
     }
 
-    [HttpGet]
+    [HttpGet("get-all-companies")]
     [Authorize(Policy = Permissions.Companies_View)]
     public async Task<IActionResult> GetPaged(
         [FromQuery] PagingParameters paging,
@@ -52,7 +52,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
         return Ok(result);
     }
 
-    [HttpGet("{id:guid}")]
+    [HttpGet("get-company-byId/{id:guid}")]
     [Authorize(Policy = Permissions.Companies_View)]
     public async Task<IActionResult> GetById(
     Guid id,
@@ -65,7 +65,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
         return Ok(company);
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("update-company/{id:guid}")]
     [Authorize(Policy = Permissions.Companies_Update)]
     public async Task<IActionResult> Update(
     Guid id,
@@ -82,7 +82,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("deActivate-company/{id:guid}")]
     [Authorize(Policy = Permissions.Companies_Delete)]
     public async Task<IActionResult> SoftDelete(
     Guid id,
@@ -95,7 +95,7 @@ public sealed class CompaniesController(IMediator mediator) : ControllerBase
         return NoContent();
     }
 
-    [HttpPost("{id:guid}/restore")]
+    [HttpPost("{id:guid}/activate-company")]
     [Authorize(Policy = Permissions.Companies_Update)]
     public async Task<IActionResult> Restore(
     Guid id,

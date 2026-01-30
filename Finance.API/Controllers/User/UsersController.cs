@@ -1,6 +1,8 @@
-﻿using Finance.Application.Features.User.Commands.AssignCompany;
-using Finance.Application.Features.User.Commands.AssignRole;
+﻿using Finance.API.Models.Queries.Users;
 using Finance.Application.Features.User.Commands.CreateUser;
+using Finance.Application.Features.User.Commands.UpdateUser;
+using Finance.Application.Features.User.Queries.GetAllUsers;
+using Finance.Application.Features.User.Queries.GetUserById;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -11,35 +13,23 @@ using Microsoft.AspNetCore.Mvc;
 public sealed class UsersController(IMediator mediator)
     : ControllerBase
 {
-    [HttpPost("{userId:guid}/companies/{companyId:guid}/roles")]
-    public async Task<IActionResult> AssignRole(
-    Guid userId,
-    Guid companyId,
-    [FromBody] AssignUserRoleRequest request,
-    CancellationToken ct)
-    {
-        await mediator.Send(
-            new AssignUserRoleCommand(
-                userId,
-                companyId,
-                request.RoleId),
-            ct);
-
-        return NoContent();
-    }
-
-    [HttpPost]
+    // Create User
+    [HttpPost("create-user")]
     public async Task<IActionResult> Create(
-    [FromBody] CreateUserRequest request,
-    CancellationToken ct)
+        [FromBody] CreateUserRequestDto request,
+        CancellationToken ct)
     {
         var userId = await mediator.Send(
             new CreateUserCommand(
                 request.Email,
                 request.Password,
                 request.FullName,
-                request.CompanyId,
-                request.RoleId),
+                request.Companies.Select(c =>
+                    new CreateUserCompanyDto(
+                        c.CompanyId,
+                        c.RoleIds
+                    )).ToList()
+            ),
             ct);
 
         return CreatedAtAction(
@@ -48,39 +38,56 @@ public sealed class UsersController(IMediator mediator)
             userId);
     }
 
-    [HttpPost("{userId:guid}/companies")]
-    public async Task<IActionResult> AssignToCompany(
+    // Get All Users
+    [HttpGet("get-all-users")]
+    public async Task<IActionResult> GetAll(
+    [FromQuery] UserQueryParameters query,
+    CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new GetAllUsersQuery(
+                query.CompanyId,
+                query.Search,
+                query.SortBy,
+                query.SortDirection,
+                query.PageNumber,
+                query.PageSize),
+            ct);
+
+        return Ok(result);
+    }
+
+    // Get User By Id
+    [HttpGet("{userId:guid}")]
+    public async Task<IActionResult> GetById(
     Guid userId,
-    [FromBody] AssignUserToCompanyRequest request,
+    CancellationToken ct)
+    {
+        var result = await mediator.Send(
+            new GetUserByIdQuery(userId),
+            ct);
+
+        return Ok(result);
+    }
+
+    // Update User
+    [HttpPut("update-user/{userId:guid}")]
+    public async Task<IActionResult> Update(
+    Guid userId,
+    [FromBody] UpdateUserRequestDto request,
     CancellationToken ct)
     {
         await mediator.Send(
-            new AssignUserToCompanyCommand(
+            new UpdateUserCommand(
                 userId,
-                request.CompanyId),
+                request.FullName,
+                request.IsActive,
+                request.Companies.Select(c =>
+                    new UpdateUserCompanyDto(
+                        c.CompanyId,
+                        c.RoleIds)).ToList()),
             ct);
 
         return NoContent();
     }
-}
-
-public sealed class AssignUserToCompanyRequest
-{
-    public Guid CompanyId { get; init; }
-}
-
-
-public sealed class AssignUserRoleRequest
-{
-    public Guid RoleId { get; init; }
-}
-
-
-public sealed class CreateUserRequest
-{
-    public string Email { get; init; } = default!;
-    public string Password { get; init; } = default!;
-    public string FullName { get; init; } = default!;
-    public Guid CompanyId { get; init; }
-    public Guid RoleId { get; init; }
 }

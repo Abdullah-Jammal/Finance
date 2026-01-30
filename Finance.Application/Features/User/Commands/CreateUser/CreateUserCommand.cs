@@ -6,6 +6,5 @@ public sealed record CreateUserCommand(
     string Email,
     string Password,
     string FullName,
-    Guid CompanyId,
-    Guid RoleId
+    IReadOnlyCollection<CreateUserCompanyDto> Companies
 ) : IRequest<Guid>;
