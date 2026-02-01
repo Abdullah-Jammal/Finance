@@ -35,6 +35,7 @@ public static class AuthSeed
             Permissions.Companies_Create,
             Permissions.Companies_Update,
             Permissions.Companies_Delete,
+            Permissions.Accounts_Create,
             Permissions.Users_View,
             Permissions.Users_Manage,
             Permissions.Roles_Manage

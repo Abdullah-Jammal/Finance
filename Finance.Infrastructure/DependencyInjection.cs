@@ -1,8 +1,10 @@
 ﻿using Finance.Application.Contracts.Auth;
+using Finance.Application.Contracts.Account;
 using Finance.Application.Contracts.Company;
 using Finance.Application.Contracts.User;
 using Finance.Infrastructure.Identity;
 using Finance.Infrastructure.Services.Auth;
+using Finance.Infrastructure.Services.AccountService;
 using Finance.Infrastructure.Services.CompanyService;
 using Finance.Infrastructure.Services.Users;
 using Microsoft.AspNetCore.Identity;
@@ -29,6 +31,7 @@ public static class DependencyInjection
         })
         .AddEntityFrameworkStores<FinanceDbContext>()
         .AddDefaultTokenProviders();
+        services.AddScoped<IAccountService, AccountService>();
         services.AddScoped<ICompanyService, CompanyService>();
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService, TokenService>();

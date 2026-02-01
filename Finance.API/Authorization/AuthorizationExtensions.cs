@@ -26,6 +26,10 @@ public static class AuthorizationExtensions
                 p => p.RequireClaim("permission", Permissions.Companies_Delete));
 
             options.AddPolicy(
+                Permissions.Accounts_Create,
+                p => p.RequireClaim("permission", Permissions.Accounts_Create));
+
+            options.AddPolicy(
                 Permissions.Users_View,
                 p => p.RequireClaim("permission", Permissions.Users_View));
 
