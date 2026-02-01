@@ -8,6 +8,7 @@ namespace Finance.API.Controllers.Accounting;
 
 [Route("api/[controller]")]
 [ApiController]
+[ApiExplorerSettings(GroupName = "accounting")]
 public sealed class AccountsController(IMediator mediator) : ControllerBase
 {
     [HttpPost("create-account")]

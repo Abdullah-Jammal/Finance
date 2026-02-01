@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 [ApiController]
 [Route("admin/users")]
 [Authorize(Policy = "users.manage")]
+[ApiExplorerSettings(GroupName = "auth")]
 public sealed class UsersController(IMediator mediator)
     : ControllerBase
 {

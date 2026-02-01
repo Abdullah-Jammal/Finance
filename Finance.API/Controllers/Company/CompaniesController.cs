@@ -15,6 +15,7 @@ namespace Finance.API.Controllers.Company;
 
 [Route("api/[controller]")]
 [ApiController]
+[ApiExplorerSettings(GroupName = "companies")]
 public sealed class CompaniesController(IMediator mediator) : ControllerBase
 {
     [HttpPost("create-company")]
