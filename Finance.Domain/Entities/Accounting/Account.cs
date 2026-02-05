@@ -9,7 +9,7 @@ public class Account : AuditableEntity<Guid>
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
     public AccountType Type { get; private set; }
-    public string? Subtype { get; private set; }
+    public AccountSubtype Subtype { get; private set; }
     public Guid? ParentId { get; private set; }
     public bool IsReconcilable { get; private set; }
     public bool AllowPosting { get; private set; }
@@ -22,7 +22,7 @@ public class Account : AuditableEntity<Guid>
         string code,
         string name,
         AccountType type,
-        string? subtype = null,
+        AccountSubtype subtype = AccountSubtype.None,
         Guid? parentId = null,
         bool isReconcilable = false,
         bool allowPosting = true,
@@ -45,7 +45,7 @@ public class Account : AuditableEntity<Guid>
         string code,
         string name,
         AccountType type,
-        string? subtype,
+        AccountSubtype subtype,
         Guid? parentId,
         bool isReconcilable,
         bool allowPosting,
@@ -63,13 +63,14 @@ public class Account : AuditableEntity<Guid>
         if (!Enum.IsDefined(typeof(AccountType), type))
             throw new ArgumentException("Account type is required");
 
+        if (!Enum.IsDefined(typeof(AccountSubtype), subtype))
+            throw new ArgumentException("Account subtype is required");
+
         CompanyId = companyId;
         Code = code.Trim();
         Name = name.Trim();
         Type = type;
-        Subtype = string.IsNullOrWhiteSpace(subtype)
-            ? null
-            : subtype.Trim();
+        Subtype = subtype;
         ParentId = parentId;
         IsReconcilable = isReconcilable;
         AllowPosting = allowPosting;

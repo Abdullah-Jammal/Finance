@@ -18,8 +18,6 @@ public sealed class CreateAccountCommandValidator
         RuleFor(x => x.Type)
             .IsInEnum().WithMessage("Account type is required.");
         RuleFor(x => x.Subtype)
-            .MaximumLength(50)
-            .When(x => !string.IsNullOrWhiteSpace(x.Subtype))
-            .WithMessage("Account subtype must not exceed 50 characters.");
+            .IsInEnum().WithMessage("Account subtype is invalid.");
     }
 }

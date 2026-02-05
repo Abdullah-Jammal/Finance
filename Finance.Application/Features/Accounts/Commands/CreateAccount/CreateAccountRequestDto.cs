@@ -8,7 +8,7 @@ public sealed class CreateAccountRequestDto
     public string Code { get; init; } = default!;
     public string Name { get; init; } = default!;
     public AccountType Type { get; init; }
-    public string? Subtype { get; init; }
+    public AccountSubtype Subtype { get; init; } = AccountSubtype.None;
     public Guid? ParentId { get; init; }
     public bool IsReconcilable { get; init; } = false;
     public bool AllowPosting { get; init; } = true;

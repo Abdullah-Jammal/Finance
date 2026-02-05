@@ -8,7 +8,7 @@ public sealed record CreateAccountCommand(
     string Code,
     string Name,
     AccountType Type,
-    string? Subtype,
+    AccountSubtype Subtype,
     Guid? ParentId,
     bool IsReconcilable,
     bool AllowPosting,
