@@ -1,6 +1,9 @@
 using Finance.Domain.Abstractions;
 using Finance.Domain.Enums;
 using Finance.Domain.Rules;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Finance.Domain.Entities.Accounting;
 
@@ -12,10 +15,14 @@ public class Account : AuditableEntity<Guid>
     public AccountType Type { get; private set; }
     public AccountSubtype Subtype { get; private set; }
     public Guid? ParentId { get; private set; }
+    public Account? Parent { get; private set; }
+    public IReadOnlyCollection<Account> Children => _children;
     public bool IsReconcilable { get; private set; }
     public bool RequiresPartner { get; private set; }
     public bool AllowPosting { get; private set; }
     public bool IsActive { get; private set; }
+
+    private readonly List<Account> _children = new();
 
     private Account() { }
 
@@ -79,5 +86,23 @@ public class Account : AuditableEntity<Guid>
         AllowPosting = allowPosting && AccountBehaviorRules.AllowsManualPosting(subtype);
         IsActive = isActive;
         Touch();
+    }
+
+    public bool CanPost()
+    {
+        if (!AllowPosting)
+            return false;
+
+        if (_children.Any())
+            return false;
+
+        return true;
+    }
+
+    public void EnsureCanPost()
+    {
+        if (!CanPost())
+            throw new InvalidOperationException(
+                "Posting is not allowed on parent or group accounts.");
     }
 }

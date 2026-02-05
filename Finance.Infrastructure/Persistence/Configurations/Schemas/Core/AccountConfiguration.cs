@@ -40,9 +40,10 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasForeignKey(x => x.CompanyId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        builder.HasOne<Account>()
-            .WithMany()
-            .HasForeignKey(x => x.ParentId)
+        builder
+            .HasMany<Account>("_children")
+            .WithOne(a => a.Parent)
+            .HasForeignKey(a => a.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }
