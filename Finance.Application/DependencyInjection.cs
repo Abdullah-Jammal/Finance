@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using Finance.Application.Accounting.Services;
 using Finance.Application.Common;
 
 namespace Finance.Application;
@@ -21,6 +22,8 @@ public static class DependencyInjection
             typeof(IPipelineBehavior<,>),
             typeof(ValidationBehavior<,>)
         );
+
+        services.AddScoped<ICoaSeeder, DefaultCoaSeeder>();
 
         return services;
     }

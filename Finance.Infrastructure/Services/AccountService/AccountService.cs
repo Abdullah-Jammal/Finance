@@ -8,6 +8,12 @@ namespace Finance.Infrastructure.Services.AccountService;
 
 public sealed class AccountService(FinanceDbContext db) : IAccountService
 {
+    public async Task<bool> HasAnyAccountAsync(Guid companyId, CancellationToken ct)
+    {
+        return await db.Set<Account>()
+            .AnyAsync(a => a.CompanyId == companyId, ct);
+    }
+
     public async Task<Guid> CreateAsync(
         Guid companyId,
         string code,
