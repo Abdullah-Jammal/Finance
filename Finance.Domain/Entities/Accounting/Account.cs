@@ -13,6 +13,7 @@ public class Account : AuditableEntity<Guid>
     public AccountSubtype Subtype { get; private set; }
     public Guid? ParentId { get; private set; }
     public bool IsReconcilable { get; private set; }
+    public bool RequiresPartner { get; private set; }
     public bool AllowPosting { get; private set; }
     public bool IsActive { get; private set; }
 
@@ -25,7 +26,6 @@ public class Account : AuditableEntity<Guid>
         AccountType type,
         AccountSubtype subtype = AccountSubtype.None,
         Guid? parentId = null,
-        bool isReconcilable = false,
         bool allowPosting = true,
         bool isActive = true)
     {
@@ -36,7 +36,6 @@ public class Account : AuditableEntity<Guid>
             type,
             subtype,
             parentId,
-            isReconcilable,
             allowPosting,
             isActive);
     }
@@ -48,7 +47,6 @@ public class Account : AuditableEntity<Guid>
         AccountType type,
         AccountSubtype subtype,
         Guid? parentId,
-        bool isReconcilable,
         bool allowPosting,
         bool isActive)
     {
@@ -76,8 +74,9 @@ public class Account : AuditableEntity<Guid>
         Type = type;
         Subtype = subtype;
         ParentId = parentId;
-        IsReconcilable = isReconcilable;
-        AllowPosting = allowPosting;
+        IsReconcilable = AccountBehaviorRules.IsReconcilable(subtype);
+        RequiresPartner = AccountBehaviorRules.RequiresPartner(subtype);
+        AllowPosting = allowPosting && AccountBehaviorRules.AllowsManualPosting(subtype);
         IsActive = isActive;
         Touch();
     }

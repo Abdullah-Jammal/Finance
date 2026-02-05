@@ -17,7 +17,6 @@ public sealed class CreateAccountCommandHandler(IAccountService service)
             request.Type,
             request.Subtype,
             request.ParentId,
-            request.IsReconcilable,
             request.AllowPosting,
             request.IsActive,
             cancellationToken);

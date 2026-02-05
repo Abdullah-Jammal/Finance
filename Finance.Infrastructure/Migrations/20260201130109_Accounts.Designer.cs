@@ -52,6 +52,9 @@ namespace Finance.Infrastructure.Migrations
                     b.Property<bool>("IsReconcilable")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("RequiresPartner")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)

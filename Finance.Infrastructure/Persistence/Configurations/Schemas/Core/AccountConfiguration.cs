@@ -28,6 +28,7 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .HasMaxLength(50)
             .IsRequired();
         builder.Property(x => x.IsReconcilable).IsRequired();
+        builder.Property(x => x.RequiresPartner).IsRequired();
         builder.Property(x => x.AllowPosting).IsRequired();
         builder.Property(x => x.IsActive).IsRequired();
 

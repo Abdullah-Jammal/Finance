@@ -24,6 +24,7 @@ namespace Finance.Infrastructure.Migrations
                     Subtype = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: true),
                     ParentId = table.Column<Guid>(type: "uuid", nullable: true),
                     IsReconcilable = table.Column<bool>(type: "boolean", nullable: false),
+                    RequiresPartner = table.Column<bool>(type: "boolean", nullable: false),
                     AllowPosting = table.Column<bool>(type: "boolean", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
