@@ -1,3 +1,4 @@
+using Finance.Domain.Enums;
 using MediatR;
 
 namespace Finance.Application.Features.Accounts.Commands.CreateAccount;
@@ -6,7 +7,7 @@ public sealed record CreateAccountCommand(
     Guid CompanyId,
     string Code,
     string Name,
-    string Type,
+    AccountType Type,
     string? Subtype,
     Guid? ParentId,
     bool IsReconcilable,

@@ -1,3 +1,5 @@
+using Finance.Domain.Enums;
+
 namespace Finance.Application.Contracts.Account;
 
 public interface IAccountService
@@ -6,7 +8,7 @@ public interface IAccountService
         Guid companyId,
         string code,
         string name,
-        string type,
+        AccountType type,
         string? subtype,
         Guid? parentId,
         bool isReconcilable,
