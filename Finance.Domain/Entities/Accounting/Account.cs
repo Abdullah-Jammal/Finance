@@ -1,4 +1,5 @@
 using Finance.Domain.Abstractions;
+using Finance.Domain.Enums;
 
 namespace Finance.Domain.Entities.Accounting;
 
@@ -7,7 +8,7 @@ public class Account : AuditableEntity<Guid>
     public Guid CompanyId { get; private set; }
     public string Code { get; private set; } = default!;
     public string Name { get; private set; } = default!;
-    public string Type { get; private set; } = default!;
+    public AccountType Type { get; private set; }
     public string? Subtype { get; private set; }
     public Guid? ParentId { get; private set; }
     public bool IsReconcilable { get; private set; }
@@ -20,7 +21,7 @@ public class Account : AuditableEntity<Guid>
         Guid companyId,
         string code,
         string name,
-        string type,
+        AccountType type,
         string? subtype = null,
         Guid? parentId = null,
         bool isReconcilable = false,
@@ -43,7 +44,7 @@ public class Account : AuditableEntity<Guid>
         Guid companyId,
         string code,
         string name,
-        string type,
+        AccountType type,
         string? subtype,
         Guid? parentId,
         bool isReconcilable,
@@ -59,13 +60,13 @@ public class Account : AuditableEntity<Guid>
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Account name is required");
 
-        if (string.IsNullOrWhiteSpace(type))
+        if (!Enum.IsDefined(typeof(AccountType), type))
             throw new ArgumentException("Account type is required");
 
         CompanyId = companyId;
         Code = code.Trim();
         Name = name.Trim();
-        Type = type.Trim();
+        Type = type;
         Subtype = string.IsNullOrWhiteSpace(subtype)
             ? null
             : subtype.Trim();

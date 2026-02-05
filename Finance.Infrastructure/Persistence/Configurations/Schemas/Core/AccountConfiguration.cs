@@ -22,8 +22,7 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .IsRequired()
             .HasMaxLength(200);
         builder.Property(x => x.Type)
-            .IsRequired()
-            .HasMaxLength(50);
+            .IsRequired();
         builder.Property(x => x.Subtype)
             .HasMaxLength(50);
         builder.Property(x => x.IsReconcilable).IsRequired();

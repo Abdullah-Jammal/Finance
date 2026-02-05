@@ -16,8 +16,7 @@ public sealed class CreateAccountCommandValidator
             .NotEmpty().WithMessage("Account name is required.")
             .MaximumLength(200).WithMessage("Account name must not exceed 200 characters.");
         RuleFor(x => x.Type)
-            .NotEmpty().WithMessage("Account type is required.")
-            .MaximumLength(50).WithMessage("Account type must not exceed 50 characters.");
+            .IsInEnum().WithMessage("Account type is required.");
         RuleFor(x => x.Subtype)
             .MaximumLength(50)
             .When(x => !string.IsNullOrWhiteSpace(x.Subtype))

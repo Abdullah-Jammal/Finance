@@ -1,6 +1,7 @@
 using Finance.Application.Common.Exceptions;
 using Finance.Application.Contracts.Account;
 using Finance.Domain.Entities.Accounting;
+using Finance.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finance.Infrastructure.Services.AccountService;
@@ -11,7 +12,7 @@ public sealed class AccountService(FinanceDbContext db) : IAccountService
         Guid companyId,
         string code,
         string name,
-        string type,
+        AccountType type,
         string? subtype,
         Guid? parentId,
         bool isReconcilable,
