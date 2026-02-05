@@ -4,6 +4,8 @@ namespace Finance.Application.Contracts.Account;
 
 public interface IAccountService
 {
+    Task<bool> HasAnyAccountAsync(Guid companyId, CancellationToken ct);
+
     Task<Guid> CreateAsync(
         Guid companyId,
         string code,
