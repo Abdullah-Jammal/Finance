@@ -10,7 +10,6 @@ public sealed class CreateAccountRequestDto
     public AccountType Type { get; init; }
     public AccountSubtype Subtype { get; init; } = AccountSubtype.None;
     public Guid? ParentId { get; init; }
-    public bool IsReconcilable { get; init; } = false;
     public bool AllowPosting { get; init; } = true;
     public bool IsActive { get; init; } = true;
 }

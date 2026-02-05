@@ -15,7 +15,6 @@ public sealed class AccountService(FinanceDbContext db) : IAccountService
         AccountType type,
         AccountSubtype subtype,
         Guid? parentId,
-        bool isReconcilable,
         bool allowPosting,
         bool isActive,
         CancellationToken ct)
@@ -45,7 +44,6 @@ public sealed class AccountService(FinanceDbContext db) : IAccountService
             type,
             subtype,
             parentId,
-            isReconcilable,
             allowPosting,
             isActive);
 

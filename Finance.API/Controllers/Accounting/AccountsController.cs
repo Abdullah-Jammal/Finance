@@ -25,7 +25,6 @@ public sealed class AccountsController(IMediator mediator) : ControllerBase
                 request.Type,
                 request.Subtype,
                 request.ParentId,
-                request.IsReconcilable,
                 request.AllowPosting,
                 request.IsActive),
             cancellationToken);

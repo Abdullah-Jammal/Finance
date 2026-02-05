@@ -11,7 +11,6 @@ public interface IAccountService
         AccountType type,
         AccountSubtype subtype,
         Guid? parentId,
-        bool isReconcilable,
         bool allowPosting,
         bool isActive,
         CancellationToken ct);

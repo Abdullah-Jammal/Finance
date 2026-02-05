@@ -10,6 +10,5 @@ public sealed record CreateAccountCommand(
     AccountType Type,
     AccountSubtype Subtype,
     Guid? ParentId,
-    bool IsReconcilable,
     bool AllowPosting,
     bool IsActive) : IRequest<Guid>;
