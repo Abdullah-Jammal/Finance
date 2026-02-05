@@ -1,5 +1,6 @@
 using Finance.Domain.Abstractions;
 using Finance.Domain.Enums;
+using Finance.Domain.Rules;
 
 namespace Finance.Domain.Entities.Accounting;
 
@@ -65,6 +66,9 @@ public class Account : AuditableEntity<Guid>
 
         if (!Enum.IsDefined(typeof(AccountSubtype), subtype))
             throw new ArgumentException("Account subtype is required");
+
+        if (!AccountSubtypeRules.IsValid(type, subtype))
+            throw new ArgumentException("Account subtype is not valid for the account type");
 
         CompanyId = companyId;
         Code = code.Trim();
