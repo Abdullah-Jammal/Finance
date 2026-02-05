@@ -105,4 +105,11 @@ public class Account : AuditableEntity<Guid>
             throw new InvalidOperationException(
                 "Posting is not allowed on parent or group accounts.");
     }
+
+    public void EnsurePartnerRequirement(Guid? partnerId)
+    {
+        if (RequiresPartner && partnerId is null)
+            throw new InvalidOperationException(
+                $"Account '{Code} - {Name}' requires a partner.");
+    }
 }
