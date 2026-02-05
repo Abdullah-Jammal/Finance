@@ -13,7 +13,7 @@ public sealed class AccountService(FinanceDbContext db) : IAccountService
         string code,
         string name,
         AccountType type,
-        string? subtype,
+        AccountSubtype subtype,
         Guid? parentId,
         bool isReconcilable,
         bool allowPosting,
