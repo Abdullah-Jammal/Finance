@@ -24,9 +24,9 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.Property(x => x.Type)
             .IsRequired();
         builder.Property(x => x.Subtype)
-            .HasConversion<string>()
-            .HasMaxLength(50)
-            .IsRequired();
+            .IsRequired()
+            .HasConversion<int>();
+
         builder.Property(x => x.IsReconcilable).IsRequired();
         builder.Property(x => x.RequiresPartner).IsRequired();
         builder.Property(x => x.AllowPosting).IsRequired();
@@ -41,9 +41,14 @@ public sealed class AccountConfiguration : IEntityTypeConfiguration<Account>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder
-            .HasMany<Account>("_children")
-            .WithOne(a => a.Parent)
+            .HasOne(a => a.Parent)
+            .WithMany(a => a.Children)
             .HasForeignKey(a => a.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
+
+        builder
+            .Navigation(a => a.Children)
+            .UsePropertyAccessMode(PropertyAccessMode.Field);
+
     }
 }

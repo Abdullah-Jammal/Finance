@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Finance.Infrastructure.Migrations
 {
     [DbContext(typeof(FinanceDbContext))]
-    [Migration("20260201130109_Accounts")]
-    partial class Accounts
+    [Migration("20260212112754_Moves")]
+    partial class Moves
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -52,9 +52,6 @@ namespace Finance.Infrastructure.Migrations
                     b.Property<bool>("IsReconcilable")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("RequiresPartner")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(200)
@@ -63,14 +60,14 @@ namespace Finance.Infrastructure.Migrations
                     b.Property<Guid?>("ParentId")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Subtype")
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<bool>("RequiresPartner")
+                        .HasColumnType("boolean");
 
-                    b.Property<string>("Type")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
+                    b.Property<int>("Subtype")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -83,6 +80,32 @@ namespace Finance.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("accounts", "core");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Entities.Accounting.Move", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("CompanyId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateOnly>("Date")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsPosted")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("moves", "core");
                 });
 
             modelBuilder.Entity("Finance.Domain.Entities.Auth.Permission", b =>
@@ -445,10 +468,60 @@ namespace Finance.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Finance.Domain.Entities.Accounting.Account", null)
-                        .WithMany()
+                    b.HasOne("Finance.Domain.Entities.Accounting.Account", "Parent")
+                        .WithMany("Children")
                         .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Parent");
+                });
+
+            modelBuilder.Entity("Finance.Domain.Entities.Accounting.Move", b =>
+                {
+                    b.OwnsMany("Finance.Domain.Entities.Accounting.MoveLine", "Lines", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid>("AccountId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<decimal>("Credit")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
+
+                            b1.Property<decimal>("Debit")
+                                .HasPrecision(18, 2)
+                                .HasColumnType("numeric(18,2)");
+
+                            b1.Property<Guid>("MoveId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<Guid?>("PartnerId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("AccountId");
+
+                            b1.HasIndex("MoveId");
+
+                            b1.ToTable("move_lines", "core");
+
+                            b1.HasOne("Finance.Domain.Entities.Accounting.Account", "Account")
+                                .WithMany()
+                                .HasForeignKey("AccountId")
+                                .OnDelete(DeleteBehavior.Restrict)
+                                .IsRequired();
+
+                            b1.WithOwner()
+                                .HasForeignKey("MoveId");
+
+                            b1.Navigation("Account");
+                        });
+
+                    b.Navigation("Lines");
                 });
 
             modelBuilder.Entity("Finance.Domain.Entities.Auth.RolePermission", b =>
@@ -551,6 +624,11 @@ namespace Finance.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Finance.Domain.Entities.Accounting.Account", b =>
+                {
+                    b.Navigation("Children");
                 });
 #pragma warning restore 612, 618
         }
